@@ -11,27 +11,33 @@ import { useAppData } from "./context/AppContext";
 import Restaurant from "./pages/Restaurant";
 
 const App = () => {
-  const {user} = useAppData();
+  const { user, loading } = useAppData();
 
-  if(user && user.role === 'seller'){
-    return <Restaurant/>
+  // Wait until we know who the user is before deciding anything
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
   }
-  return <>
+
+  return (
     <BrowserRouter>
       <Navbar />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
         </Route>
-        <Route element={<ProtectedRoute />} >
-          <Route path="/" element={<Home />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={user?.role === 'seller' ? <Restaurant /> : <Home />} />
           <Route path="/select-role" element={<SelectRole />} />
-          <Route path="/account" element={<Account/>}/>
+          <Route path="/account" element={<Account />} />
         </Route>
       </Routes>
       <Toaster />
     </BrowserRouter>
-  </>
+  );
 }
 
 export default App;

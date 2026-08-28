@@ -4,7 +4,13 @@ import { useAppData } from "../context/AppContext"
 const ProtectedRoute = () => {
     const {isAuth , user , loading} = useAppData();
     const location = useLocation();
-    if(loading) return null;
+    if (loading) {
+        return (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+                Loading...
+            </div>
+        );
+    }
     if(!isAuth){
         return <Navigate to={'/login'} replace/>;
     }
