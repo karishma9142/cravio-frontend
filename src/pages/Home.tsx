@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { type IRestaurant } from "../types";
 import axios from "axios";
 import { restaurantService } from "../main";
+import RestaurantCard from "../components/RestaurantCard";
 
 const Home = () => {
     const { location } = useAppData();
@@ -57,7 +58,7 @@ const Home = () => {
                     Authorization : `Bearer ${localStorage.getItem('token')}`,
                 }
             } );
-            setRestaurants(data.restaurant??[]);
+            setRestaurants(data.restaurants??[]);
         } catch (error) {
             console.log(error);
         } finally{
@@ -75,8 +76,30 @@ const Home = () => {
         </div>
     }
     return (
-        <div>
-            home
+        <div className="mx-auto max-w-7xl px-4 py-6">
+            {restaurants.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                    {
+                        restaurants.map((res) => {
+                            const[resLng , resLat] = res.autoLocation.coordinates;
+
+                            const distance = getDistanceKm(
+                                location.latitude,
+                                location.longitude,
+                                resLat,
+                                resLng
+                            )
+
+                            return <RestaurantCard key={res._id} id={res._id}
+                            name={res.name} image={res.image ?? ""} distance={`${distance}`} isOpen={res.isOpen}/>;
+                        })
+                    }
+                </div>
+            ) : (
+                <p className="text-center text-gray-500">
+                    No restaurant found
+                </p>
+            )}
         </div>
     )
 }

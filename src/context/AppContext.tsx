@@ -1,11 +1,11 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { authService } from "../main";
-import { type locationData, type AppContextType, type User } from "../types";
+import { authService, restaurantService } from "../main";
+import { type locationData, type AppContextType, type User,type ICart } from "../types";
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-interface AppProviderProp {
+interface AppProviderProp { 
     children: ReactNode
 };
 
@@ -36,10 +36,38 @@ export const AppProvider = ({ children }: AppProviderProp) => {
             setLoading(false);
         }
     }
+
+    const [cart , setCart] = useState<ICart[]>([]);
+    const [subtotal , setSubTotal] = useState(0);
+    const [quantity , setQuantity] = useState(0);
+
+    async function fetchCart() {
+        if(!user || user.role !== 'customer') return;
+
+        try {
+            const {data} = await axios.get(`${restaurantService}/api/cart/all` , {
+                headers : {
+                    Authorization : `Bearer ${localStorage.getItem('token')}`,
+                }
+            })
+
+            setCart(data.cart || []);
+            setSubTotal(data.subtotal || 0);
+            setQuantity(data.cartLength);
+        } catch (error) {
+            console.log(error);
+        }
+    }
     
     useEffect(() => {
         fetchUser();
     }, []);
+
+     useEffect(() => {
+        if(user && user.role === 'customer'){
+            fetchCart();
+        }
+    }, [user]);
 
     useEffect(() => {
         if (!navigator.geolocation) {
@@ -95,7 +123,7 @@ export const AppProvider = ({ children }: AppProviderProp) => {
         );
     }, []);
 
-    return <AppContext.Provider value={{ isAuth, loading, setIsAuth, setLoading, setUser, user, location, loadingLocation, city }}>{children}</AppContext.Provider>
+    return <AppContext.Provider value={{ isAuth, loading, setIsAuth, setLoading, setUser, user, location, loadingLocation, city ,cart,fetchCart , subtotal , quantity}}>{children}</AppContext.Provider>
 };
 
 export const useAppData = (): AppContextType => {

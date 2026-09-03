@@ -9,6 +9,10 @@ import Navbar from "./components/Navbar";
 import Account from "./pages/Account";
 import { useAppData } from "./context/AppContext";
 import Restaurant from "./pages/Restaurant";
+import RestaurantPage from "./pages/RestaurantPage";
+import CartPage from "./pages/Cart";
+import AddAddressPage from "./pages/address";
+import CheckOut from "./pages/Checkout";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -31,8 +35,12 @@ const App = () => {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={user?.role === 'seller' ? <Restaurant /> : <Home />} />
+          <Route path="/restaurant/:id" element={<RestaurantPage/>} />
+          <Route path="/cart" element={<CartPage/>} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/address" element={<AddAddressPage/>} />
+          <Route path="/checkout" element={<CheckOut/>} />
         </Route>
       </Routes>
       <Toaster />

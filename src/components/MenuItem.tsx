@@ -1,12 +1,13 @@
 import { useState } from "react";
 import type { IMenuItem } from "../types";
-import { BsEye } from "react-icons/bs";
+import { BsCartPlus, BsEye } from "react-icons/bs";
 import { FiEyeOff } from "react-icons/fi";
-import { BiCart, BiTrash } from "react-icons/bi";
+import {  BiTrash } from "react-icons/bi";
 import { VscLoading } from "react-icons/vsc";
 import axios from "axios";
 import { restaurantService } from "../main";
 import toast from "react-hot-toast";
+import { useAppData } from "../context/AppContext";
 
 interface MenuItemProps {
     items: IMenuItem[];
@@ -49,6 +50,29 @@ const MenuItems = ({ items, onItemDeleted, isSeller }: MenuItemProps) => {
         } catch (error) {
             console.log(error);
             toast.error('falied to upadate status')
+        }
+    }
+
+    const {fetchCart} = useAppData();
+
+    const addToCart = async (restaurantId: string , itemId : string) => {
+        try {
+            setLoadingItemId(itemId);
+
+            const {data} = await axios.post(`${restaurantService}/api/cart/add` , {
+                restaurantId , itemId
+            },{
+                headers : {
+                    Authorization : `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            toast.success(data.msg);
+            fetchCart();
+        } catch (error : any) {
+            console.log(error);
+            toast.error(error.response.data.msg);
+        }finally {
+            setLoadingItemId(null);
         }
     }
     return (
@@ -120,14 +144,15 @@ const MenuItems = ({ items, onItemDeleted, isSeller }: MenuItemProps) => {
                                     {
                                         !isSeller && (
                                             <button disabled={!item.isAvailables || isLoading}
-                                            onClick={() => {}} className={`flex items-center justify-center rounded-lg p-2 ${
+                                                onClick={() => {addToCart(item.restaurantId , item._id)}} 
+                                                className={`flex items-center justify-center rounded-lg p-2 ${
                                                 !item.isAvailables || isLoading
                                                 ? "cursor-not-allowed text-gray-400"
                                                 : "text-red-500 hover:bg-red-50"
                                             }`}
                                             >
                                                 {isLoading ? <VscLoading size={18} className="animate-spin"/> :
-                                                <BiCart size={18}/>}
+                                                <BsCartPlus size={18}/>}
                                             </button>
                                         )
                                     }
