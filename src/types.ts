@@ -47,7 +47,7 @@ export interface IRestaurant  {
 };
 
 export interface IMenuItem {
-    _id : string
+    _id : string;
     restaurantId: string;
     description: string;
     name: string;
@@ -59,6 +59,7 @@ export interface IMenuItem {
 }
 
 export interface ICart {
+    _id : string
     userid : string;
     restaurantId: string | IRestaurant;
     itemId : string | IMenuItem;
