@@ -13,6 +13,7 @@ import RestaurantPage from "./pages/RestaurantPage";
 import CartPage from "./pages/Cart";
 import AddAddressPage from "./pages/address";
 import CheckOut from "./pages/Checkout";
+import PaymentSuccess from "./pages/paymentSuccess";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/account" element={<Account />} />
           <Route path="/address" element={<AddAddressPage/>} />
           <Route path="/checkout" element={<CheckOut/>} />
+          <Route path="/paymentSuccess/:paymentId" element={<PaymentSuccess/>} />
         </Route>
       </Routes>
       <Toaster />
