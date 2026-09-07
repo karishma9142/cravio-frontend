@@ -26,6 +26,7 @@ export interface AppContextType {
     fetchCart : ()=> Promise<void>;
     subtotal : number;
     quantity : number;
+    loadingCart: boolean;
 }
 
 export interface IRestaurant  {

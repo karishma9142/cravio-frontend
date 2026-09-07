@@ -5,6 +5,7 @@ import { restaurantService, utilsService } from "../main";
 import { useNavigate } from "react-router-dom";
 import type { ICart, IMenuItem, IRestaurant } from "../types";
 import toast from "react-hot-toast";
+import {loadStripe} from '@stripe/stripe-js'
 
 interface Address {
     _id: string;
@@ -169,6 +170,7 @@ const CheckOut = () => {
         }
     };
 
+    const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
     const payWithStripe = async () => {
         try {
             setLoadingStrip(true);
@@ -176,8 +178,21 @@ const CheckOut = () => {
             const order = await createOrder("stripe");
 
             if (!order) return;
+            const {orderId , amount} = order;
+            try {
+                const stripe = await stripePromise;
+                const {data} = await axios.post(`${utilsService}/api/payment/stripe/create` , {
+                    orderId
+                })
 
-            console.log("Stripe checkout", order);
+                if(data.url){
+                    window.location.href = data.url
+                }else{
+                    toast.error('failed to create payment session')
+                }
+            } catch (error) {
+                toast.error('payment failed')
+            }
 
             // Add Stripe checkout logic here
         } catch (error) {

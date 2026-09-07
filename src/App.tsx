@@ -14,6 +14,7 @@ import CartPage from "./pages/Cart";
 import AddAddressPage from "./pages/address";
 import CheckOut from "./pages/Checkout";
 import PaymentSuccess from "./pages/paymentSuccess";
+import OrderSuccess from "./pages/OrderSuccess";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -43,6 +44,7 @@ const App = () => {
           <Route path="/address" element={<AddAddressPage/>} />
           <Route path="/checkout" element={<CheckOut/>} />
           <Route path="/paymentSuccess/:paymentId" element={<PaymentSuccess/>} />
+          <Route path="/ordersuccess" element={<OrderSuccess/>} />
         </Route>
       </Routes>
       <Toaster />
