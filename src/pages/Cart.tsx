@@ -10,12 +10,19 @@ import { restaurantService } from "../main";
 import { TbTrash } from "react-icons/tb";
 
 const CartPage = () => {
-    const {cart , subtotal , quantity , fetchCart ,} = useAppData();
+    const {cart , subtotal , quantity , fetchCart ,loadingCart} = useAppData();
     const navigate = useNavigate();
 
     const [loadingItemId , setLoadingItemId] = useState<string | null>(null);
     const [clearingCart , setClearingCart] = useState(false);
-
+    
+    if (loadingCart) {
+        return (
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <VscLoading size={24} className="animate-spin text-gray-400" />
+            </div>
+        );
+    }
     if(!cart || cart.length === 0){
         return (
             <div className="flex min-h-[60vh] items-center justify-center">

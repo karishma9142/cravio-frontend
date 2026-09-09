@@ -170,38 +170,28 @@ const CheckOut = () => {
         }
     };
 
-    const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+    // const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
     const payWithStripe = async () => {
-        try {
-            setLoadingStrip(true);
+    try {
+        setLoadingStrip(true);
+        const order = await createOrder("stripe");
+        if (!order) return;
+        const { orderId } = order;
 
-            const order = await createOrder("stripe");
+        const { data } = await axios.post(`${utilsService}/api/payment/stripe/create`, { orderId });
 
-            if (!order) return;
-            const {orderId , amount} = order;
-            try {
-                const stripe = await stripePromise;
-                const {data} = await axios.post(`${utilsService}/api/payment/stripe/create` , {
-                    orderId
-                })
-
-                if(data.url){
-                    window.location.href = data.url
-                }else{
-                    toast.error('failed to create payment session')
-                }
-            } catch (error) {
-                toast.error('payment failed')
-            }
-
-            // Add Stripe checkout logic here
-        } catch (error) {
-            console.log(error);
-            toast.error("Payment failed");
-        } finally {
-            setLoadingStrip(false);
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            toast.error('failed to create payment session');
         }
-    };
+    } catch (error) {
+        console.log(error);            // add this so you can see the real error next time
+        toast.error("Payment failed");
+    } finally {
+        setLoadingStrip(false);
+    }
+};
 
     return (
         <div className="mx-auto max-w-4xl space-y-6 px-4 py-6">

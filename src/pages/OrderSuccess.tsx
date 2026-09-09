@@ -27,7 +27,7 @@ const OrderSuccess = () => {
     } , [sessionId])
     return (
         <div className="flex h-[60vh] items-center justify-center">
-            <h1 className="text-2xl font-bold text-gray-600">
+            <h1 className="text-2xl font-bold text-green-600">
                 Payment Successfull
             </h1>
         </div>
