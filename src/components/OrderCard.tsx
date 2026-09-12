@@ -30,7 +30,7 @@ const statusColor = (status: string) => {
 const OrderCard = ({ order, onStatusUpdate }: props) => {
     const [loading , setLoading] = useState(false);
 
-    const actions = ORDER_ACTION[order.status];
+    const actions = ORDER_ACTION[order.status] ?? [];
 
     const updateStatus = async (status : string) => {
         try {
