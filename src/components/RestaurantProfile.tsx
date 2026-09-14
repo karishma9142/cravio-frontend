@@ -4,6 +4,7 @@ import axios from "axios";
 import { restaurantService } from "../main";
 import toast from "react-hot-toast";
 import { BiEdit, BiMapPin, BiSave } from "react-icons/bi";
+import { useAppData } from "../context/AppContext";
 
 interface props {
     restaurant: IRestaurant;
@@ -55,7 +56,35 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }: props) => {
         } finally {
             setLoading(false);
         }
-    }
+    };
+    const { setIsAuth, setUser } = useAppData();
+
+    const logoutHandler = async () => {
+        try {
+            const { data } = await axios.put(
+                `${restaurantService}/api/restaurant/status`,
+                { status: false },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+
+            setIopen(data.restaurant.isOpen); // false
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            localStorage.removeItem("token");
+            setIsAuth(false);
+            setUser(null);
+
+            toast.success("Logout successful");
+        } catch (error: any) {
+            console.log(error);
+            toast.error(error.response?.data?.msg || "Logout failed");
+        }
+    };
     return (
         <div className="mx-auto max-w-xl rounded-xl bg-white shadow-sm overflow-hidden">
             {restaurant.image && (
@@ -132,6 +161,17 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }: props) => {
                                         : "bg-green-600 hover:bg-green-700"
                                         }`}>
                                     {isOpen ? 'Close Restaurant' : 'Open Restaurant'}
+                                </button>
+                            )
+                        }
+                        {
+                            isSeller && (
+                                <button
+                                    onClick={logoutHandler}
+                                    className={`rounded-lg py-1.5 px-4 text-sm font-medium text-white 
+                                        bg-red-600 hover:bg-red-600`
+                                    }>
+                                    Logout
                                 </button>
                             )
                         }
