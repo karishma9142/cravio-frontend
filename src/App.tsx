@@ -17,6 +17,7 @@ import PaymentSuccess from "./pages/paymentSuccess";
 import OrderSuccess from "./pages/OrderSuccess";
 import Orders from "./pages/Orders";
 import Orderpage from "./pages/OrderPage";
+import RiderDashBoard from "./pages/RiderDashBoard";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -30,6 +31,13 @@ const App = () => {
     );
   }
 
+  if(user && user.role === 'rider'){
+    return <RiderDashBoard/>
+  }
+  if(user && user.role === 'seller'){
+    return <Restaurant/>
+  }
+
   return (
     <BrowserRouter>
       <Navbar />
@@ -38,7 +46,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
         </Route>
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={user?.role === 'seller' ? <Restaurant /> : <Home />} />
+          <Route path="/"  element = {<Home />} />
           <Route path="/restaurant/:id" element={<RestaurantPage/>} />
           <Route path="/cart" element={<CartPage/>} />
           <Route path="/select-role" element={<SelectRole />} />
