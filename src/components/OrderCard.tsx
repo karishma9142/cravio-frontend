@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { IOrder } from "../types";
 import { ORDER_ACTION } from "../utils/orderFlow";
 import axios from "axios";
@@ -29,12 +29,26 @@ const statusColor = (status: string) => {
 }
 const OrderCard = ({ order, onStatusUpdate }: props) => {
     const [loading , setLoading] = useState(false);
+    const [retryVisible , setRetryVisible] = useState(false);
 
     const actions = ORDER_ACTION[order.status] ?? [];
 
+    useEffect(()=>{
+        if(order.status !== 'ready_for_rider'){
+            setRetryVisible(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setRetryVisible(true);
+        },1000)
+
+        return () => clearInterval(timer);
+    },[order.status])
     const updateStatus = async (status : string) => {
         try {
             setLoading(true);
+            setRetryVisible(false)
             await axios.put(
                 `${restaurantService}/api/order/${order._id}`,
                 {status},
@@ -45,6 +59,7 @@ const OrderCard = ({ order, onStatusUpdate }: props) => {
                 }
             );
             toast.success('Order update');
+            onStatusUpdate?.();
         } catch (error : any) {
             toast.error(error.response.data.msg);
         } finally{
@@ -87,6 +102,16 @@ const OrderCard = ({ order, onStatusUpdate }: props) => {
                     </div>
                 )
             }
+
+            {order.status === 'ready_for_rider' && retryVisible && (
+                <div className="pt-2">
+                    <button className="w-full rounded-lg border border-[#e23744] py-2 text-xs
+                    font-semibold text-[#e23744] hover:bg-red-50 disabled:opacity-50" 
+                    onClick={() => updateStatus('ready_for_rider')}>
+                        Retry Ready for Rider
+                    </button>
+                </div>
+            )}
         </div>
     )
 }
