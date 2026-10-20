@@ -5,6 +5,7 @@ import axios from "axios";
 import { riderServer } from "../main";
 import toast from "react-hot-toast";
 import { BiUpload } from "react-icons/bi";
+import type { IOrder } from "../types";
 
 interface IRider {
     _id: string;
@@ -34,6 +35,29 @@ const RiderDashBoard = () => {
     const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
     const [image, setImage] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
+
+    const [incomingOrders , setIncomingOrders] = useState<string[]>([]);
+    const [currentOrder , setCurrentOrder] = useState<IOrder |null>(null);
+
+    useEffect(() => {
+        if(!socket) return;
+
+        const onOrderAvailable = ({orderId} : {orderId : string}) => {
+            setIncomingOrders((prev) => 
+                prev.includes(orderId) ? prev : [...prev , orderId]
+            );
+
+            setTimeout(() => {
+                setIncomingOrders((prev) => prev.filter((id) => id!=orderId));
+            },10000);
+        }
+
+        socket.on("order:available" , onOrderAvailable);
+
+        return ()=>{
+            socket.off("order:available" , onOrderAvailable);
+        }
+    },[socket]);
 
     const fetchProfile = async () => {
         try {
@@ -67,6 +91,25 @@ const RiderDashBoard = () => {
         }
         return "Unable to get your location.";
     };
+
+    const fetchCurrentOrder = async() => {
+        try {
+            const {data} = await axios.get(`${riderServer}/api/rider/order/current` , {
+                headers : {
+                    Authorization : `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+
+            setCurrentOrder(data.order);
+        } catch (error) {
+            console.log(error);
+            setCurrentOrder(null);
+        }
+    };
+
+    useEffect(() => {
+        fetchCurrentOrder();
+    } , [])
 
     const toggleAvailibity = () => {
         if (!navigator.geolocation) {
@@ -349,6 +392,19 @@ const RiderDashBoard = () => {
                     </p>
                 )}
             </div>
+
+            {profile.isAvailble && incomingOrders.length > 0 && (
+                <div className="mx-auto max-w-md px-4 space-y-3">
+                    <h3 className="font-semibold text-gray-700">
+                        Incomin Orders
+                    </h3>
+                    {
+                        incomingOrders.map((id) => (
+                            <p key={id}>{id}</p>
+                        ))
+                    }
+                </div>
+            )}
         </div>
     </div>
 );
