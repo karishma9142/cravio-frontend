@@ -6,6 +6,8 @@ import { riderServer } from "../main";
 import toast from "react-hot-toast";
 import { BiUpload } from "react-icons/bi";
 import type { IOrder } from "../types";
+import RiderOrderRequest from "./RiderOrderRequest";
+import RiderCurrentOrder from "../components/RiderCurrentOrder";
 
 interface IRider {
     _id: string;
@@ -36,28 +38,30 @@ const RiderDashBoard = () => {
     const [image, setImage] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    const [incomingOrders , setIncomingOrders] = useState<string[]>([]);
-    const [currentOrder , setCurrentOrder] = useState<IOrder |null>(null);
+    const [incomingOrders, setIncomingOrders] = useState<string[]>([]);
+    const [currentOrder, setCurrentOrder] = useState<IOrder | null>(null);
 
     useEffect(() => {
-        if(!socket) return;
+        if (!socket) return;
 
-        const onOrderAvailable = ({orderId} : {orderId : string}) => {
-            setIncomingOrders((prev) => 
-                prev.includes(orderId) ? prev : [...prev , orderId]
+        const onOrderAvailable = ({ orderId }: { orderId: string }) => {
+            console.log("Order received on frontend:", orderId);
+
+            setIncomingOrders((prev) =>
+                prev.includes(orderId) ? prev : [...prev, orderId]
             );
 
             setTimeout(() => {
-                setIncomingOrders((prev) => prev.filter((id) => id!=orderId));
-            },10000);
+                setIncomingOrders((prev) => prev.filter((id) => id != orderId));
+            }, 10000);
         }
 
-        socket.on("order:available" , onOrderAvailable);
+        socket.on("order:available", onOrderAvailable);
 
-        return ()=>{
-            socket.off("order:available" , onOrderAvailable);
+        return () => {
+            socket.off("order:available", onOrderAvailable);
         }
-    },[socket]);
+    }, [socket]);
 
     const fetchProfile = async () => {
         try {
@@ -92,11 +96,11 @@ const RiderDashBoard = () => {
         return "Unable to get your location.";
     };
 
-    const fetchCurrentOrder = async() => {
+    const fetchCurrentOrder = async () => {
         try {
-            const {data} = await axios.get(`${riderServer}/api/rider/order/current` , {
-                headers : {
-                    Authorization : `Bearer ${localStorage.getItem("token")}`
+            const { data } = await axios.get(`${riderServer}/api/rider/order/current`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
             });
 
@@ -109,7 +113,7 @@ const RiderDashBoard = () => {
 
     useEffect(() => {
         fetchCurrentOrder();
-    } , [])
+    }, [])
 
     const toggleAvailibity = () => {
         if (!navigator.geolocation) {
@@ -269,145 +273,166 @@ const RiderDashBoard = () => {
             </div>
         );
     }
-
+console.log(currentOrder)
     return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8">
-        <div className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-white shadow-md">
+        <div className="min-h-screen bg-gray-50 px-4 py-8">
+            <div className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-white shadow-md">
 
-            {/* Header */}
-            <div className="bg-[#E23744] px-6 py-8 text-center text-white">
-                <div className="mx-auto mb-4 h-28 w-28 overflow-hidden rounded-full border-4 border-white shadow-lg">
-                    <img
-                        src={profile.pictuer}
-                        alt="Rider"
-                        className="h-full w-full object-cover"
-                    />
-                </div>
-
-                <h1 className="text-2xl font-bold">
-                    Rider Dashboard
-                </h1>
-
-                <p className="mt-1 text-sm text-white/80">
-                    Manage your delivery status
-                </p>
-            </div>
-
-            {/* Profile Information */}
-            <div className="space-y-5 p-6">
-
-                {/* Status */}
-                <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                    <div>
-                        <p className="text-xs text-gray-500">
-                            Account Status
-                        </p>
-
-                        <p className="mt-1 font-semibold text-gray-800">
-                            {profile.isVerified
-                                ? "Verified Rider"
-                                : "Verification Pending"}
-                        </p>
+                {/* Header */}
+                <div className="bg-[#E23744] px-6 py-8 text-center text-white">
+                    <div className="mx-auto mb-4 h-28 w-28 overflow-hidden rounded-full border-4 border-white shadow-lg">
+                        <img
+                            src={profile.pictuer}
+                            alt="Rider"
+                            className="h-full w-full object-cover"
+                        />
                     </div>
 
-                    <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            profile.isVerified
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                        }`}
-                    >
-                        {profile.isVerified ? "Verified" : "Pending"}
-                    </span>
-                </div>
+                    <h1 className="text-2xl font-bold">
+                        Rider Dashboard
+                    </h1>
 
-                {/* Phone */}
-                <div className="rounded-xl border border-gray-100 p-4">
-                    <p className="text-xs text-gray-500">
-                        Phone Number
-                    </p>
-
-                    <p className="mt-1 font-medium text-gray-800">
-                        {profile.phoneNumber}
+                    <p className="mt-1 text-sm text-white/80">
+                        Manage your delivery status
                     </p>
                 </div>
 
-                {/* Availability */}
-                <div className="flex items-center justify-between rounded-xl border border-gray-100 p-4">
-                    <div>
-                        <p className="text-xs text-gray-500">
-                            Delivery Status
-                        </p>
+                {/* Profile Information */}
+                <div className="space-y-5 p-6">
 
-                        <div className="mt-1 flex items-center gap-2">
-                            <span
-                                className={`h-2.5 w-2.5 rounded-full ${
-                                    profile.isAvailble
-                                        ? "bg-green-500"
-                                        : "bg-gray-400"
-                                }`}
-                            />
+                    {/* Status */}
+                    <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                        <div>
+                            <p className="text-xs text-gray-500">
+                                Account Status
+                            </p>
 
-                            <p className="font-semibold text-gray-800">
-                                {profile.isAvailble
-                                    ? "Online"
-                                    : "Offline"}
+                            <p className="mt-1 font-semibold text-gray-800">
+                                {profile.isVerified
+                                    ? "Verified Rider"
+                                    : "Verification Pending"}
                             </p>
                         </div>
+
+                        <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.isVerified
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
+                                }`}
+                        >
+                            {profile.isVerified ? "Verified" : "Pending"}
+                        </span>
                     </div>
 
-                    <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            profile.isAvailble
+                    {/* Phone */}
+                    <div className="rounded-xl border border-gray-100 p-4">
+                        <p className="text-xs text-gray-500">
+                            Phone Number
+                        </p>
+
+                        <p className="mt-1 font-medium text-gray-800">
+                            {profile.phoneNumber}
+                        </p>
+                    </div>
+
+                    {/* Availability */}
+                    <div className="flex items-center justify-between rounded-xl border border-gray-100 p-4">
+                        <div>
+                            <p className="text-xs text-gray-500">
+                                Delivery Status
+                            </p>
+
+                            <div className="mt-1 flex items-center gap-2">
+                                <span
+                                    className={`h-2.5 w-2.5 rounded-full ${profile.isAvailble
+                                        ? "bg-green-500"
+                                        : "bg-gray-400"
+                                        }`}
+                                />
+
+                                <p className="font-semibold text-gray-800">
+                                    {profile.isAvailble
+                                        ? "Online"
+                                        : "Offline"}
+                                </p>
+                            </div>
+                        </div>
+
+                        <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.isAvailble
                                 ? "bg-green-100 text-green-700"
                                 : "bg-gray-100 text-gray-600"
-                        }`}
-                    >
-                        {profile.isAvailble ? "Active" : "Inactive"}
-                    </span>
-                </div>
+                                }`}
+                        >
+                            {profile.isAvailble ? "Active" : "Inactive"}
+                        </span>
+                    </div>
 
-                {/* Toggle Button */}
-                <button
-                    className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                        profile.isAvailble
+                    {/* Toggle Button */}
+                    <button
+                        className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${profile.isAvailble
                             ? "bg-gray-700 hover:bg-gray-800"
                             : "bg-[#E23744] hover:bg-red-600"
-                    }`}
-                    disabled={toggling || !profile.isVerified}
-                    onClick={toggleAvailibity}
-                >
-                    {toggling
-                        ? "Updating..."
-                        : !profile.isVerified
-                        ? "Waiting for Verification"
-                        : profile.isAvailble
-                        ? "Go Offline"
-                        : "Go Online"}
-                </button>
+                            }`}
+                        disabled={toggling || !profile.isVerified}
+                        onClick={toggleAvailibity}
+                    >
+                        {toggling
+                            ? "Updating..."
+                            : !profile.isVerified
+                                ? "Waiting for Verification"
+                                : profile.isAvailble
+                                    ? "Go Offline"
+                                    : "Go Online"}
+                    </button>
 
-                {!profile.isVerified && (
-                    <p className="text-center text-xs text-gray-500">
-                        Your profile must be verified before you can go online.
-                    </p>
-                )}
-            </div>
-
-            {profile.isAvailble && incomingOrders.length > 0 && (
-                <div className="mx-auto max-w-md px-4 space-y-3">
-                    <h3 className="font-semibold text-gray-700">
-                        Incomin Orders
-                    </h3>
-                    {
-                        incomingOrders.map((id) => (
-                            <p key={id}>{id}</p>
-                        ))
-                    }
+                    {!profile.isVerified && (
+                        <p className="text-center text-xs text-gray-500">
+                            Your profile must be verified before you can go online.
+                        </p>
+                    )}
                 </div>
-            )}
+                {/* <p>hello</p> */}
+
+                {/* Current Order
+                {currentOrder && (
+                    <div className="mx-6 mb-6 rounded-xl border border-green-200 bg-green-50 p-4">
+                        <h3 className="font-semibold text-green-800">
+                            Your Current Order
+                        </h3>
+
+                        <p className="mt-2 text-sm text-gray-700">
+                            Order ID: {currentOrder._id}
+                        </p>
+                    </div>
+                )} */}
+
+                {profile.isVerified && incomingOrders.length > 0 && (
+                    <div className="mx-auto max-w-md px-4 space-y-3">
+                        {/* <p>hello</p> */}
+                        <h3 className="font-semibold text-gray-700">
+                            Incomin Orders
+                        </h3>
+                        {
+                            incomingOrders.map((id) => (
+                                <RiderOrderRequest key={id} orderId={id}
+                                    onAccepted={() => {
+                                        fetchProfile();
+                                        fetchCurrentOrder();
+                                    }}
+                                />
+                            ))}
+                    </div>
+                )}
+                
+                {currentOrder  &&
+                    <div className="mx-auto max-w-md px-4 space-y-4">
+                        <RiderCurrentOrder order={currentOrder}
+                        onStatusUpdate = {fetchCurrentOrder}/>
+                    </div>}
+            </div>
         </div>
-    </div>
-);
+    );
 };
 
 export default RiderDashBoard;
