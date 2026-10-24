@@ -18,6 +18,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import Orders from "./pages/Orders";
 import Orderpage from "./pages/OrderPage";
 import RiderDashBoard from "./pages/RiderDashBoard";
+import Admin from "./pages/Admin";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -37,7 +38,9 @@ const App = () => {
   if(user && user.role === 'seller'){
     return <Restaurant/>
   }
-
+  if(user && user.role === 'admin'){
+    return <Admin/>
+  }
   return (
     <BrowserRouter>
       <Navbar />

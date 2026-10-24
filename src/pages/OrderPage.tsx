@@ -1,34 +1,35 @@
 import { useParams } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import { useEffect, useState } from "react";
-import {type IOrder } from "../types";
+import { type IOrder } from "../types";
 import axios from "axios";
 import { restaurantService } from "../main";
+import CustomerOrderMap from "../components/CustomerOrderMap";
 
-const Orderpage = () => { 
-    const {id} = useParams();
-    const {socket} = useSocket();
+const Orderpage = () => {
+    const { id } = useParams();
+    const { socket } = useSocket();
 
-    const [order , setOrder] = useState<IOrder | null>(null);
+    const [order, setOrder] = useState<IOrder | null>(null);
 
-    const [loading , setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const fetchOrder = async () => {
         try {
-            const {data} = await axios.get(`${restaurantService}/api/order/${id}` , {
-                headers : {
-                    Authorization : `Bearer ${localStorage.getItem('token')}`
+            const { data } = await axios.get(`${restaurantService}/api/order/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             })
             setOrder(data);
         } catch (error) {
             console.log(error);
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
     useEffect(() => {
         fetchOrder();
-    } , [id]);
+    }, [id]);
 
     useEffect(() => {
         if (!socket) return;
@@ -45,13 +46,40 @@ const Orderpage = () => {
 
     }, [socket]);
 
-    
+    useEffect(() => {
+        if (!socket || !id) {
+            return;
+        }
+
+        socket.emit("join", `user:${id}`);
+
+        return () => {
+            socket.emit("leave", `user:${id}`)
+        }
+    }, [socket, id]);
+
+    const [riderLocation, setRiderLocation] = useState<[number, number] | null>(null)
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const onRiderLocation = ({ latitude, longitude }: any) => {
+            console.log("Rider Location : ", latitude, longitude);
+            setRiderLocation([latitude, longitude])
+        };
+
+        socket.on("rider:location", onRiderLocation)
+
+        return () => {
+            socket.off("rider:location", onRiderLocation)
+        }
+    }, [socket]);
 
     if (loading) {
         return <p className="text-center text-gray-500">Loading Orders</p>
     }
 
-    if(!order){
+    if (!order) {
         return (
             <div className="flex min-h-[60vh] items-center justify-center">
                 <p className="text-gray-500">NO order found</p>
@@ -67,7 +95,7 @@ const Orderpage = () => {
             <div className="rounded-xl bg-white p-4 shadow-sm space-y-2">
                 <h2 className="font-semibold">Items</h2>
                 {
-                    order.items.map((item , i) => (
+                    order.items.map((item, i) => (
                         <div className="flex justify-between text-sm" key={i}>
                             <span>{item.name} x {item.quantity}</span>
                             <span>₹{item.price * item.quantity}</span>
@@ -100,7 +128,18 @@ const Orderpage = () => {
                 <p className="text-xs text-gray-500">Payment Method: {order.paymentMethod}</p>
                 <p className="text-xs text-gray-500">Payment Status: {order.paymentStatus}</p>
             </div>
-            
+            {
+                (order.status === "rider_assigned" ||
+                    order.status === "picked_up") ? (
+                    <CustomerOrderMap
+                        order={order}
+                        socket={socket}
+                        id={order.userId}
+                    />
+                ) : (
+                    <p>Waiting for rider assignment</p>
+                )
+            }
         </div>
     )
 };
