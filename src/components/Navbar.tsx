@@ -5,7 +5,7 @@ import { CgShoppingCart } from "react-icons/cg";
 import { BiMapPin, BiSearch } from "react-icons/bi";
 
 const Navbar = () => {
-    const { isAuth ,city , loadingLocation,quantity} = useAppData();
+    const { isAuth ,city ,quantity} = useAppData();
     const currlocation = useLocation();
 
     const isHomePage = currlocation.pathname === "/";

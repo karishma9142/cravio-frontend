@@ -65,6 +65,7 @@ const Orderpage = () => {
 
         const onRiderLocation = ({ latitude, longitude }: any) => {
             console.log("Rider Location : ", latitude, longitude);
+            console.log(riderLocation);
             setRiderLocation([latitude, longitude])
         };
 

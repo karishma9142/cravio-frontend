@@ -1,4 +1,3 @@
-import { DiVim } from "react-icons/di";
 import { useNavigate } from "react-router-dom"
 
 type props = {

@@ -5,7 +5,7 @@ import { restaurantService, utilsService } from "../main";
 import { useNavigate } from "react-router-dom";
 import type { ICart, IMenuItem, IRestaurant } from "../types";
 import toast from "react-hot-toast";
-import {loadStripe} from '@stripe/stripe-js'
+
 
 interface Address {
     _id: string;
